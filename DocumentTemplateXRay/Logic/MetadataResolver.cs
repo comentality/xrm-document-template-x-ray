@@ -5,7 +5,7 @@ using Microsoft.Xrm.Sdk;
 using Microsoft.Xrm.Sdk.Messages;
 using Microsoft.Xrm.Sdk.Metadata;
 
-namespace DocumentXRay.Logic
+namespace DocumentTemplateXRay.Logic
 {
     public class MetadataResolver
     {

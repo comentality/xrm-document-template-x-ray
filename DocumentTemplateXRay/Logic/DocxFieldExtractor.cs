@@ -4,7 +4,7 @@ using System.IO.Compression;
 using System.Linq;
 using System.Text.RegularExpressions;
 
-namespace DocumentXRay.Logic
+namespace DocumentTemplateXRay.Logic
 {
     public static class DocxFieldExtractor
     {

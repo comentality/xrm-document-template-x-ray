@@ -1,4 +1,4 @@
-namespace DocumentXRay.Logic
+namespace DocumentTemplateXRay.Logic
 {
     public class FieldInfo
     {

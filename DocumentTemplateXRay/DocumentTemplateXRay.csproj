@@ -2,9 +2,9 @@
   <PropertyGroup>
     <TargetFramework>net48</TargetFramework>
     <OutputType>Library</OutputType>
-    <AssemblyName>DocumentXRay</AssemblyName>
-    <RootNamespace>DocumentXRay</RootNamespace>
-    <Version>1.2.0</Version>
+    <AssemblyName>DocumentTemplateXRay</AssemblyName>
+    <RootNamespace>DocumentTemplateXRay</RootNamespace>
+    <Version>1.2.2</Version>
     <UseWindowsForms>true</UseWindowsForms>
   </PropertyGroup>
 

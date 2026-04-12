@@ -5,12 +5,12 @@ using System.Drawing.Drawing2D;
 using System.IO;
 using System.Linq;
 using System.Windows.Forms;
-using DocumentXRay.Logic;
+using DocumentTemplateXRay.Logic;
 using XrmToolBox.Extensibility;
 
-namespace DocumentXRay
+namespace DocumentTemplateXRay
 {
-    public partial class DocumentXRayControl : PluginControlBase
+    public partial class DocumentTemplateXRayControl : PluginControlBase
     {
         private List<FieldInfo> _currentFields;
 
@@ -27,7 +27,7 @@ namespace DocumentXRay
         private ListView _lvFields;
         private TreeView _tvFields;
 
-        public DocumentXRayControl()
+        public DocumentTemplateXRayControl()
         {
             InitializeComponent();
         }
@@ -163,7 +163,7 @@ namespace DocumentXRay
             Controls.Add(_toolbarPanel);
             Controls.Add(_dropZonePanel);
 
-            Name = "DocumentXRayControl";
+            Name = "DocumentTemplateXRayControl";
             Size = new Size(900, 600);
 
             ResumeLayout(false);
@@ -350,11 +350,21 @@ namespace DocumentXRay
                     .Select(f => f.FieldPath),
                 StringComparer.OrdinalIgnoreCase);
 
-            // Build a lookup from field path to display name
+            // Build a lookup from field path to column display name
             var displayNameLookup = _currentFields
                 .Where(f => f.FieldPath != null && f.ColumnDisplayName != null)
                 .GroupBy(f => f.FieldPath, StringComparer.OrdinalIgnoreCase)
                 .ToDictionary(g => g.Key, g => g.First().ColumnDisplayName, StringComparer.OrdinalIgnoreCase);
+
+            // Build a lookup from parent path (path minus last segment) to table display name
+            var tableNameLookup = _currentFields
+                .Where(f => f.FieldPath != null && f.TableDisplayName != null)
+                .GroupBy(f =>
+                {
+                    var lastSlash = f.FieldPath.LastIndexOf('/');
+                    return lastSlash > 0 ? f.FieldPath.Substring(0, lastSlash) : f.FieldPath;
+                }, StringComparer.OrdinalIgnoreCase)
+                .ToDictionary(g => g.Key, g => g.First().TableDisplayName, StringComparer.OrdinalIgnoreCase);
 
             var uniquePaths = _currentFields
                 .Select(f => f.FieldPath)
@@ -372,7 +382,7 @@ namespace DocumentXRay
                 foreach (var segment in segments)
                 {
                     builtPath = builtPath.Length == 0 ? segment : builtPath + "/" + segment;
-                    var existing = nodes.Cast<TreeNode>().FirstOrDefault(n => n.Text == segment || n.Text == segment + " (repeating)");
+                    var existing = nodes.Cast<TreeNode>().FirstOrDefault(n => n.Text.StartsWith(segment));
                     if (existing != null)
                     {
                         nodes = existing.Nodes;
@@ -386,6 +396,8 @@ namespace DocumentXRay
                             displayText = segment + " (repeating)";
                         else if (isLeaf && displayNameLookup.TryGetValue(path, out var dn))
                             displayText = segment + "  [" + dn + "]";
+                        else if (!isLeaf && tableNameLookup.TryGetValue(builtPath, out var tn))
+                            displayText = segment + "  [" + tn + "]";
                         else
                             displayText = segment;
                         var newNode = nodes.Add(displayText);
