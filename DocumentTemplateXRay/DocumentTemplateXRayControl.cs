@@ -43,6 +43,11 @@ namespace DocumentTemplateXRay
         public DocumentTemplateXRayControl()
         {
             InitializeComponent();
+            Load += (s, e) =>
+            {
+                if (_splitContainer.Width > 0)
+                    _splitContainer.SplitterDistance = _splitContainer.Width / 2;
+            };
         }
 
         private void InitializeComponent()
@@ -54,8 +59,7 @@ namespace DocumentTemplateXRay
             {
                 Dock = DockStyle.Fill,
                 Orientation = Orientation.Vertical,
-                SplitterDistance = 280,
-                FixedPanel = FixedPanel.Panel1
+                FixedPanel = FixedPanel.None
             };
 
             // ===== LEFT PANEL: Template list =====

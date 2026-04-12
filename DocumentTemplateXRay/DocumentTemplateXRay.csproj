@@ -4,7 +4,7 @@
     <OutputType>Library</OutputType>
     <AssemblyName>DocumentTemplateXRay</AssemblyName>
     <RootNamespace>DocumentTemplateXRay</RootNamespace>
-    <Version>1.2.9</Version>
+    <Version>1.2.13</Version>
     <UseWindowsForms>true</UseWindowsForms>
     <Company>Comentality</Company>
   </PropertyGroup>
