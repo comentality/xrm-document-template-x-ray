@@ -4,6 +4,7 @@
     <OutputType>Library</OutputType>
     <AssemblyName>DocumentXRay</AssemblyName>
     <RootNamespace>DocumentXRay</RootNamespace>
+    <Version>1.2.0</Version>
     <UseWindowsForms>true</UseWindowsForms>
   </PropertyGroup>
 
