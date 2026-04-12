@@ -4,13 +4,19 @@
     <OutputType>Library</OutputType>
     <AssemblyName>DocumentTemplateXRay</AssemblyName>
     <RootNamespace>DocumentTemplateXRay</RootNamespace>
-    <Version>1.2.13</Version>
+    <Version>1.2.14</Version>
     <UseWindowsForms>true</UseWindowsForms>
     <Company>Comentality</Company>
+    <Authors>Comentality</Authors>
+    <Description>Extract Dynamics 365 field references from Word document templates. Analyzes DOCX templates to reveal all entity fields, conditions, and relationships used.</Description>
+    <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
+    <NuspecFile>DocumentTemplateXRay.nuspec</NuspecFile>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="XrmToolBoxPackage" Version="1.2025.7.71" />
+    <PackageReference Include="XrmToolBoxPackage" Version="1.2025.7.71">
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
   </ItemGroup>
 
   <ItemGroup>
