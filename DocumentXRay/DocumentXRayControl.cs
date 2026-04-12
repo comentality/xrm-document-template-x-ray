@@ -138,6 +138,8 @@ namespace DocumentXRay
                 Font = new Font("Segoe UI", 9f)
             };
             _lvFields.Columns.Add("Field Path", 300);
+            _lvFields.Columns.Add("Table", 160);
+            _lvFields.Columns.Add("Column", 180);
             _lvFields.Columns.Add("Tag", 180);
             _lvFields.Columns.Add("Alias", 180);
             _lvFields.Columns.Add("Repeating Section", 160);
@@ -247,11 +249,37 @@ namespace DocumentXRay
                 }
 
                 DisplayResults();
+                ResolveDisplayNames();
             }
             catch (Exception ex)
             {
                 MessageBox.Show(ex.Message, "Error reading template", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
+        }
+
+        private void ResolveDisplayNames()
+        {
+            if (_currentFields == null || _currentFields.Count == 0) return;
+            if (Service == null) return;
+
+            WorkAsync(new WorkAsyncInfo
+            {
+                Message = "Resolving field display names...",
+                Work = (worker, args) =>
+                {
+                    var resolver = new MetadataResolver(Service);
+                    resolver.ResolveDisplayNames(_currentFields);
+                },
+                PostWorkCallBack = result =>
+                {
+                    if (result.Error != null)
+                    {
+                        _lblFieldCount.Text += " (metadata lookup failed)";
+                    }
+
+                    DisplayResults();
+                }
+            });
         }
 
         private void DisplayMode_Changed(object sender, EventArgs e)
@@ -282,6 +310,8 @@ namespace DocumentXRay
             foreach (var f in _currentFields)
             {
                 var item = new ListViewItem(f.FieldPath ?? "");
+                item.SubItems.Add(f.TableDisplayName ?? "");
+                item.SubItems.Add(f.ColumnDisplayName ?? "");
                 item.SubItems.Add(f.Tag ?? "");
                 item.SubItems.Add(f.Alias ?? "");
 
@@ -320,6 +350,12 @@ namespace DocumentXRay
                     .Select(f => f.FieldPath),
                 StringComparer.OrdinalIgnoreCase);
 
+            // Build a lookup from field path to display name
+            var displayNameLookup = _currentFields
+                .Where(f => f.FieldPath != null && f.ColumnDisplayName != null)
+                .GroupBy(f => f.FieldPath, StringComparer.OrdinalIgnoreCase)
+                .ToDictionary(g => g.Key, g => g.First().ColumnDisplayName, StringComparer.OrdinalIgnoreCase);
+
             var uniquePaths = _currentFields
                 .Select(f => f.FieldPath)
                 .Where(p => p != null)
@@ -344,7 +380,14 @@ namespace DocumentXRay
                     else
                     {
                         var isRepeating = repeatingSectionPaths.Contains(builtPath);
-                        var displayText = isRepeating ? segment + " (repeating)" : segment;
+                        var isLeaf = (Array.IndexOf(segments, segment) == segments.Length - 1);
+                        string displayText;
+                        if (isRepeating)
+                            displayText = segment + " (repeating)";
+                        else if (isLeaf && displayNameLookup.TryGetValue(path, out var dn))
+                            displayText = segment + "  [" + dn + "]";
+                        else
+                            displayText = segment;
                         var newNode = nodes.Add(displayText);
                         if (isRepeating)
                         {

@@ -10,5 +10,7 @@ namespace DocumentXRay.Logic
         public string Location { get; set; }
         public bool IsRepeatingSection { get; set; }
         public string RepeatingSectionName { get; set; }
+        public string TableDisplayName { get; set; }
+        public string ColumnDisplayName { get; set; }
     }
 }
