@@ -1,5 +1,7 @@
 # Document Template X-Ray
 
+[![NuGet](https://img.shields.io/nuget/v/DocumentTemplateXRay)](https://www.nuget.org/packages/DocumentTemplateXRay)
+
 An [XrmToolBox](https://www.xrmtoolbox.com/) tool that extracts and displays all Dynamics 365 field references from Word (.docx) document templates.
 
 When you build Word templates for Dynamics 365, it's easy to lose track of which entity fields, relationships, and repeating sections are actually used. Document Template X-Ray reads the underlying XML content controls and presents every field in a clear flat list or tree view — no need to click through the template one control at a time.
