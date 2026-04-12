@@ -137,10 +137,11 @@ namespace DocumentXRay
                 GridLines = true,
                 Font = new Font("Segoe UI", 9f)
             };
-            _lvFields.Columns.Add("Field Path", 350);
-            _lvFields.Columns.Add("Tag", 200);
-            _lvFields.Columns.Add("Alias", 200);
-            _lvFields.Columns.Add("Location", 180);
+            _lvFields.Columns.Add("Field Path", 300);
+            _lvFields.Columns.Add("Tag", 180);
+            _lvFields.Columns.Add("Alias", 180);
+            _lvFields.Columns.Add("Repeating Section", 160);
+            _lvFields.Columns.Add("Location", 150);
 
             _tvFields = new TreeView
             {
@@ -283,7 +284,26 @@ namespace DocumentXRay
                 var item = new ListViewItem(f.FieldPath ?? "");
                 item.SubItems.Add(f.Tag ?? "");
                 item.SubItems.Add(f.Alias ?? "");
+
+                string repeatInfo = "";
+                if (f.IsRepeatingSection)
+                    repeatInfo = "(section)";
+                else if (f.RepeatingSectionName != null)
+                    repeatInfo = f.RepeatingSectionName;
+                item.SubItems.Add(repeatInfo);
+
                 item.SubItems.Add(f.Location ?? "");
+
+                if (f.IsRepeatingSection)
+                {
+                    item.Font = new Font(_lvFields.Font, FontStyle.Bold);
+                    item.ForeColor = Color.FromArgb(0, 100, 160);
+                }
+                else if (f.RepeatingSectionName != null)
+                {
+                    item.ForeColor = Color.FromArgb(0, 100, 160);
+                }
+
                 _lvFields.Items.Add(item);
             }
         }
@@ -292,6 +312,13 @@ namespace DocumentXRay
         {
             _tvFields.BeginUpdate();
             _tvFields.Nodes.Clear();
+
+            // Collect repeating section paths for marking nodes
+            var repeatingSectionPaths = new HashSet<string>(
+                _currentFields
+                    .Where(f => f.IsRepeatingSection && f.FieldPath != null)
+                    .Select(f => f.FieldPath),
+                StringComparer.OrdinalIgnoreCase);
 
             var uniquePaths = _currentFields
                 .Select(f => f.FieldPath)
@@ -304,17 +331,26 @@ namespace DocumentXRay
             {
                 var segments = path.Split('/');
                 var nodes = _tvFields.Nodes;
+                var builtPath = "";
 
                 foreach (var segment in segments)
                 {
-                    var existing = nodes.Cast<TreeNode>().FirstOrDefault(n => n.Text == segment);
+                    builtPath = builtPath.Length == 0 ? segment : builtPath + "/" + segment;
+                    var existing = nodes.Cast<TreeNode>().FirstOrDefault(n => n.Text == segment || n.Text == segment + " (repeating)");
                     if (existing != null)
                     {
                         nodes = existing.Nodes;
                     }
                     else
                     {
-                        var newNode = nodes.Add(segment);
+                        var isRepeating = repeatingSectionPaths.Contains(builtPath);
+                        var displayText = isRepeating ? segment + " (repeating)" : segment;
+                        var newNode = nodes.Add(displayText);
+                        if (isRepeating)
+                        {
+                            newNode.ForeColor = Color.FromArgb(0, 100, 160);
+                            newNode.NodeFont = new Font(_tvFields.Font, FontStyle.Bold);
+                        }
                         nodes = newNode.Nodes;
                     }
                 }

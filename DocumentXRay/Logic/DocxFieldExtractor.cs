@@ -32,6 +32,9 @@ namespace DocumentXRay.Logic
         private static readonly Regex NsPattern =
             new Regex(@"ns\d+:", RegexOptions.Compiled);
 
+        private static readonly Regex RepeatingSectionPattern =
+            new Regex(@"<w15:repeatingSection\s*/>", RegexOptions.Compiled);
+
         public static List<FieldInfo> ExtractFields(string docxPath)
         {
             var xmlParts = ExtractXmlParts(docxPath);
@@ -41,6 +44,28 @@ namespace DocumentXRay.Logic
             {
                 var fields = ParseContentControls(kvp.Value, kvp.Key);
                 allFields.AddRange(fields);
+            }
+
+            // Collect repeating section paths, then tag child fields
+            var repeatingSectionPaths = allFields
+                .Where(f => f.IsRepeatingSection && f.FieldPath != null)
+                .Select(f => f.FieldPath)
+                .ToList();
+
+            foreach (var field in allFields)
+            {
+                if (field.IsRepeatingSection || field.FieldPath == null) continue;
+
+                foreach (var rsPath in repeatingSectionPaths)
+                {
+                    if (field.FieldPath.StartsWith(rsPath + "/"))
+                    {
+                        field.RepeatingSectionName = rsPath.Contains("/")
+                            ? rsPath.Substring(rsPath.LastIndexOf('/') + 1)
+                            : rsPath;
+                        break;
+                    }
+                }
             }
 
             return allFields;
@@ -96,6 +121,8 @@ namespace DocumentXRay.Logic
                 var tagMatch = TagPattern.Match(prContent);
                 var aliasMatch = AliasPattern.Match(prContent);
 
+                var isRepeating = RepeatingSectionPattern.IsMatch(prContent);
+
                 fields.Add(new FieldInfo
                 {
                     FieldPath = ConvertXPathToFieldPath(xpathValue),
@@ -103,7 +130,8 @@ namespace DocumentXRay.Logic
                     Alias = aliasMatch.Success ? aliasMatch.Groups[1].Value : null,
                     XPath = xpathValue,
                     StoreId = storeIdMatch.Success ? storeIdMatch.Groups[1].Value : null,
-                    Location = partName
+                    Location = partName,
+                    IsRepeatingSection = isRepeating
                 });
             }
 

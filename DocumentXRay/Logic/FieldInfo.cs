@@ -8,5 +8,7 @@ namespace DocumentXRay.Logic
         public string XPath { get; set; }
         public string StoreId { get; set; }
         public string Location { get; set; }
+        public bool IsRepeatingSection { get; set; }
+        public string RepeatingSectionName { get; set; }
     }
 }
