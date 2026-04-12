@@ -2,14 +2,14 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2012/06/nuspec.xsd">
   <metadata>
     <id>DocumentTemplateXRay</id>
-    <version>1.2.14</version>
+    <version>1.2.15</version>
     <title>Document Template X-Ray</title>
     <authors>Comentality</authors>
     <license type="expression">MIT</license>
-    <projectUrl>https://github.com/kk/xrm-document-x-ray</projectUrl>
+    <projectUrl>https://github.com/comentality/xrm-document-template-x-ray</projectUrl>
     <icon>icon.png</icon>
     <description>Extract Dynamics 365 field references from Word document templates. Analyzes DOCX templates to reveal all entity fields, conditions, and relationships used.</description>
-    <releaseNotes>v1.2.14 - Initial Plugin Store release.</releaseNotes>
+    <releaseNotes>v1.2.15 - Transfer repo to Comentality org, update project URL.</releaseNotes>
     <tags>XrmToolBox Dynamics365 CRM DocumentTemplate PowerPlatform</tags>
     <dependencies>
       <group targetFramework=".NETFramework4.8">
