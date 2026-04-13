@@ -1,6 +1,7 @@
 # Document Template X-Ray
 
 [![NuGet](https://img.shields.io/nuget/v/DocumentTemplateXRay)](https://www.nuget.org/packages/DocumentTemplateXRay)
+[![XrmToolBox](https://img.shields.io/badge/XrmToolBox-Plugin-blue)](https://www.xrmtoolbox.com/plugins/plugininfo/?id=6284fa8b-ac36-f111-9a90-7ced8d45b89f)
 
 An [XrmToolBox](https://www.xrmtoolbox.com/) tool that extracts and displays all Dynamics 365 field references from Word (.docx) document templates.
 
