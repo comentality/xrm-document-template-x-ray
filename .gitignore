@@ -6,3 +6,5 @@ obj/
 .claude/
 .nuget-apikey
 artifacts/
+# The private XrmToolBox instance xtb.ps1 builds, including its connection and its token cache.
+.xtb/
