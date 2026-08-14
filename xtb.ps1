@@ -32,7 +32,8 @@ if (-not (Get-Module -ListAvailable XtbSandbox)) {
 Import-Module XtbSandbox
 
 Start-XtbSandbox @PSBoundParameters `
-    -InstanceRoot (Join-Path $PSScriptRoot ".xtb") `
-    -ProjectPath  (Join-Path $PSScriptRoot "DocumentTemplateXRay\DocumentTemplateXRay.csproj") `
-    -ToolName     "Document Template X-Ray" `
-    -Clipboard    (Join-Path $PSScriptRoot "test_doc.docx")
+    -InstanceRoot   (Join-Path $PSScriptRoot ".xtb") `
+    -ProjectPath    (Join-Path $PSScriptRoot "DocumentTemplateXRay\DocumentTemplateXRay.csproj") `
+    -ToolName       "Document Template X-Ray" `
+    -ConnectionName "DocumentTemplateXRay E2E" `
+    -Clipboard      (Join-Path $PSScriptRoot "test_doc.docx")
