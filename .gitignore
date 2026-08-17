@@ -8,3 +8,5 @@ obj/
 artifacts/
 # The private XrmToolBox instance xtb.ps1 builds, including its connection and its token cache.
 .xtb/
+# Word owner files, left behind when a fixture is open in Word.
+~$*

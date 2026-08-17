@@ -176,13 +176,12 @@ namespace DocumentTemplateXRay
             {
                 Text = "",
                 AutoSize = true,
-                Anchor = AnchorStyles.Top | AnchorStyles.Right,
                 ForeColor = Color.FromArgb(0, 120, 0),
                 Font = new Font("Segoe UI", 9f, FontStyle.Bold)
             };
 
             _toolbarPanel.Controls.AddRange(new Control[] { _lblFilePath, _rbFlat, _rbTree, _lblFieldCount });
-            _toolbarPanel.Resize += ToolbarPanel_Resize;
+            _toolbarPanel.Resize += (s, e) => LayoutToolbar();
 
             // -- Results area --
             _resultsPanel = new Panel { Dock = DockStyle.Fill, Visible = false };
@@ -444,6 +443,7 @@ namespace DocumentTemplateXRay
                     _lblFieldCount.Text = $"{_currentFields.Count} field(s) found";
                     _lblFieldCount.ForeColor = Color.FromArgb(0, 120, 0);
                 }
+                LayoutToolbar();
 
                 DisplayResults();
                 ResolveDisplayNames();
@@ -472,6 +472,7 @@ namespace DocumentTemplateXRay
                     if (result.Error != null)
                     {
                         _lblFieldCount.Text += " (metadata lookup failed)";
+                        LayoutToolbar();
                     }
 
                     DisplayResults();
@@ -528,13 +529,16 @@ namespace DocumentTemplateXRay
                 DisplayResults();
         }
 
-        private void ToolbarPanel_Resize(object sender, EventArgs e)
+        // The field count sits hard against the right edge and the view radios pack in to its
+        // left, so a long message ("No Dynamics fields found") pushes them along instead of
+        // printing over them. The label auto-sizes, so this has to run whenever its text
+        // changes, not only when the panel is resized.
+        private void LayoutToolbar()
         {
-            var w = _toolbarPanel.Width;
-            _rbFlat.Left = w - 240;
-            _rbTree.Left = w - 150;
-            _lblFieldCount.Left = w - _lblFieldCount.Width - 10;
+            _lblFieldCount.Left = _toolbarPanel.Width - _lblFieldCount.Width - 10;
             _lblFieldCount.Top = 9;
+            _rbTree.Left = _lblFieldCount.Left - _rbTree.Width - 15;
+            _rbFlat.Left = _rbTree.Left - _rbFlat.Width - 10;
         }
 
         private void DisplayResults()
