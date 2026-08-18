@@ -14,7 +14,7 @@
 # test_doc.docx is left on the clipboard, because the tool takes a local .docx and that is
 # the one thing you always have to go and find.
 #
-# Everything that is XrmToolBox rather than Document Template X-Ray lives in the XtbSandbox
+# Everything that is XrmToolBox rather than Document Template XRay lives in the XtbSandbox
 # module (github.com/comentality/xrmtoolbox-sandbox), shared with the other tools.
 
 param(
@@ -34,6 +34,6 @@ Import-Module XtbSandbox
 Start-XtbSandbox @PSBoundParameters `
     -InstanceRoot   (Join-Path $PSScriptRoot ".xtb") `
     -ProjectPath    (Join-Path $PSScriptRoot "DocumentTemplateXRay\DocumentTemplateXRay.csproj") `
-    -ToolName       "Document Template X-Ray" `
+    -ToolName       "Document Template XRay" `
     -ConnectionName "DocumentTemplateXRay E2E" `
     -Clipboard      (Join-Path $PSScriptRoot "test_doc.docx")

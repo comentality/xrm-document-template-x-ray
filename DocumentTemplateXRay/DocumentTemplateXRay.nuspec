@@ -2,16 +2,17 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2012/06/nuspec.xsd">
   <metadata>
     <id>DocumentTemplateXRay</id>
-    <version>1.2.18</version>
-    <title>Document Template X-Ray</title>
+    <version>1.2.20</version>
+    <title>Document Template XRay</title>
     <authors>Comentality</authors>
     <license type="expression">MIT</license>
     <projectUrl>https://github.com/comentality/xrm-document-template-x-ray</projectUrl>
+    <repository type="git" url="https://github.com/comentality/xrm-document-template-x-ray.git" branch="main" />
     <icon>icon.png</icon>
     <readme>docs\README.md</readme>
-    <description>Extract Dynamics 365 field references from Word document templates. Analyzes DOCX templates to reveal all entity fields, conditions, and relationships used.</description>
-    <releaseNotes>v1.2.18 - Stop the field count from printing over the view selector.</releaseNotes>
-    <tags>XrmToolBox Dynamics365 CRM DocumentTemplate PowerPlatform</tags>
+    <description>Extract Dynamics 365 field references from Word document templates (XRay). Analyzes DOCX templates to reveal all entity fields, conditions, and relationships used.</description>
+    <releaseNotes>v1.2.20 - Rename to "Document Template XRay". The hyphen in "X-Ray" meant a search for "xray" in the XrmToolBox tools list did not match this tool.</releaseNotes>
+    <tags>XrmToolBox Dynamics365 CRM DocumentTemplate PowerPlatform XRay</tags>
     <dependencies>
       <group targetFramework=".NETFramework4.8">
         <dependency id="XrmToolBox" version="1.2025.7.71" />

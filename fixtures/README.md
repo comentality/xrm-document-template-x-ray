@@ -1,6 +1,6 @@
 # Test fixtures
 
-Word templates for exercising Document Template X-Ray by hand — one per behaviour worth
+Word templates for exercising Document Template XRay by hand — one per behaviour worth
 seeing in a screenshot.
 
 They are real `.docx` files: Word opens them, shows the content controls, and resolves the

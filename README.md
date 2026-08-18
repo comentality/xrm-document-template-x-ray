@@ -1,11 +1,11 @@
-# Document Template X-Ray
+# Document Template XRay
 
 [![NuGet](https://img.shields.io/nuget/v/DocumentTemplateXRay)](https://www.nuget.org/packages/DocumentTemplateXRay)
 [![XrmToolBox](https://img.shields.io/badge/XrmToolBox-Plugin-blue)](https://www.xrmtoolbox.com/plugins/plugininfo/?id=6284fa8b-ac36-f111-9a90-7ced8d45b89f)
 
 An [XrmToolBox](https://www.xrmtoolbox.com/) tool that extracts and displays all Dynamics 365 field references from Word (.docx) document templates.
 
-When you build Word templates for Dynamics 365, it's easy to lose track of which entity fields, relationships, and repeating sections are actually used. Document Template X-Ray reads the underlying XML content controls and presents every field in a clear flat list or tree view — no need to click through the template one control at a time.
+When you build Word templates for Dynamics 365, it's easy to lose track of which entity fields, relationships, and repeating sections are actually used. Document Template XRay reads the underlying XML content controls and presents every field in a clear flat list or tree view — no need to click through the template one control at a time.
 
 ## The problem it solves
 
@@ -15,9 +15,9 @@ Here is a real template open in Word:
 
 Three of those lines say `description`. Two say `name`. `address1_city` appears four times. Column names repeat across tables — every table in Dataverse has a `description` and a `createdon` — so the moment a template pulls in a related record, the page fills up with controls that look identical and read from completely different places. Nothing you can see says which is which: the difference is a data binding buried in the XML, and Word will not show it to you without clicking each control in turn.
 
-Here is the same file in Document Template X-Ray:
+Here is the same file in Document Template XRay:
 
-![The same template in Document Template X-Ray](https://raw.githubusercontent.com/comentality/xrm-document-template-x-ray/main/docs/screenshots/tool-01-flat-list.png)
+![The same template in Document Template XRay](https://raw.githubusercontent.com/comentality/xrm-document-template-x-ray/main/docs/screenshots/tool-01-flat-list.png)
 
 The three `description` fields turn out to be `account/description`, `account/account_parent_account/description` and `account/account_primary_contact/description` — the account, its parent account, and its primary contact. The Table and Column columns name each one the way the business does, so `telephone1` on the account is *Main Phone* while `telephone1` on the contact is *Business Phone*.
 

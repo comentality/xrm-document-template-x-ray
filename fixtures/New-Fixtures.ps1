@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-    Builds the .docx test fixtures for Document Template X-Ray.
+    Builds the .docx test fixtures for Document Template XRay.
 
 .DESCRIPTION
     A Dynamics 365 Word template is an ordinary .docx whose content controls carry a
@@ -434,7 +434,7 @@ function New-Fixture {
         'xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">' +
         '<dc:title>' + (Format-XmlText $Fixture.Title) + '</dc:title>' +
         '<dc:description>' + (Format-XmlText $Fixture.Description) + '</dc:description>' +
-        '<dc:creator>Document Template X-Ray fixtures</dc:creator></cp:coreProperties>'
+        '<dc:creator>Document Template XRay fixtures</dc:creator></cp:coreProperties>'
 
     $parts['docProps/app.xml'] = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' +
         '<Properties xmlns="http://schemas.openxmlformats.org/officeDocument/2006/extended-properties" ' +
