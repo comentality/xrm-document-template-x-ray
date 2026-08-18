@@ -6,8 +6,8 @@
     <title>Document Template XRay</title>
     <authors>Comentality</authors>
     <license type="expression">MIT</license>
-    <projectUrl>https://github.com/comentality/xrm-document-template-x-ray</projectUrl>
-    <repository type="git" url="https://github.com/comentality/xrm-document-template-x-ray.git" branch="main" />
+    <projectUrl>https://github.com/comentality/xrm-document-template-xray</projectUrl>
+    <repository type="git" url="https://github.com/comentality/xrm-document-template-xray.git" branch="main" />
     <icon>icon.png</icon>
     <readme>docs\README.md</readme>
     <description>Extract Dynamics 365 field references from Word document templates (XRay). Analyzes DOCX templates to reveal all entity fields, conditions, and relationships used.</description>
