@@ -36,8 +36,9 @@ Pink on the light tent-olive tile measures **1.24:1** at the top of the gradient
 and the violet band measures **1.05:1** — the brand guide's own warning is that
 pink on olive "depends on the accent being a large, solid shape. Do not use it
 for thin strokes, small marks, or anything carrying text." This icon is nothing
-but text, so the tile runs down into deep olive, where the pink measures 3.97:1
-and the band 3.36:1.
+but text, so the tile runs down into deep olive, where the pink measures 3.06:1
+and the ray's leading edge 4.87:1. (The band itself only reaches 2.59:1 there,
+which is why the edge and not the band is what has to carry the reading.)
 
 The alternates here were built and looked at in a real XrmToolBox tool list
 beside Events2Code before this one was chosen:
@@ -67,9 +68,22 @@ it must never share a value.** `tint` is far lighter than this icon's olive-to-d
 tile, so the rounded square keeps its edge. A surface close to the icon's own
 green would dissolve that edge and leave the pink text floating in a field.
 
-## Still to do
+## Re-rendering it
 
-The glyph is not yet in [`comentality-brand`](https://github.com/comentality/comentality-brand)`/brand.py`,
-so it cannot be re-rendered in the other schemes the way Events2Code can. Porting
-it means one glyph function: a list of word lengths per line, the shading ladder,
-and two rectangles for the band and the cut.
+The glyph now lives in [`comentality-brand`](https://github.com/comentality/comentality-brand)`/brand.py`
+as `documenttemplatexray`, so it can be rendered the way Events2Code can:
+
+```powershell
+python brand.py --glyph documenttemplatexray                       # every scheme, 80px and 32px
+python brand.py --glyph documenttemplatexray --base64 full-olive   # the two ExportMetadata blobs
+```
+
+The tile it ships on is the kit's `full-olive` scheme, added with the glyph —
+`#798156` down to `#3E4426`, the one scheme whose top stays light enough to read
+as paper while its bottom is dark enough to carry text.
+
+`icon.svg` here is still the source of record for what shipped, and the two
+renderers do not agree to the byte: the Python render differs from it by a mean
+of 4/255 across the tile, all of it anti-aliasing along the word ends. If the
+icon is ever regenerated from `brand.py`, re-render the base64 blobs and the
+nuspec `icon.png` from the same run so all three stay in step.
