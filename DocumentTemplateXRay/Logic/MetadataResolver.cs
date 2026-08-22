@@ -7,24 +7,62 @@ using Microsoft.Xrm.Sdk.Metadata;
 
 namespace DocumentTemplateXRay.Logic
 {
+    /// <summary>What one field path turned out to be, in words.</summary>
+    public class ResolvedName
+    {
+        public string Table;
+        public string Column;
+    }
+
     public class MetadataResolver
     {
         private readonly IOrganizationService _service;
-        private readonly Dictionary<string, EntityMetadata> _cache = new Dictionary<string, EntityMetadata>(StringComparer.OrdinalIgnoreCase);
+        private readonly Dictionary<string, EntityMetadata> _cache;
 
-        public MetadataResolver(IOrganizationService service)
+        /// <summary>
+        /// Tables the environment could not be asked about at all - a timeout, a dropped
+        /// connection. Not the same as a table that is not there, which is an answer.
+        /// </summary>
+        public readonly List<string> Unavailable = new List<string>();
+
+        /// <summary>
+        /// Everything looked up, including what was handed in. A RetrieveEntityRequest carries
+        /// every attribute and every relationship of a table, so the caller keeps this and hands
+        /// it back next time rather than paying for the same answer once per template.
+        /// </summary>
+        public Dictionary<string, EntityMetadata> Cache { get { return _cache; } }
+
+        public MetadataResolver(IOrganizationService service,
+            IDictionary<string, EntityMetadata> known = null)
         {
             _service = service;
+            _cache = known == null
+                ? new Dictionary<string, EntityMetadata>(StringComparer.OrdinalIgnoreCase)
+                : new Dictionary<string, EntityMetadata>(known, StringComparer.OrdinalIgnoreCase);
         }
 
-        public void ResolveDisplayNames(List<FieldInfo> fields)
+        /// <summary>
+        /// The display names behind these field paths, one round trip per table not already known.
+        ///
+        /// It takes paths and gives back words, rather than taking the fields and writing into
+        /// them: this runs on a worker, and those fields are being drawn on the UI thread at the
+        /// same time. Nothing here touches anything the window owns.
+        ///
+        /// <paramref name="cancelled"/> is asked between tables. The request already on the wire
+        /// cannot be recalled; the ones behind it are most of the wait on a slow link.
+        /// </summary>
+        public Dictionary<string, ResolvedName> Resolve(IEnumerable<string> fieldPaths,
+            Func<bool> cancelled = null)
         {
-            foreach (var field in fields)
-            {
-                if (string.IsNullOrEmpty(field.FieldPath)) continue;
+            var resolved = new Dictionary<string, ResolvedName>(StringComparer.OrdinalIgnoreCase);
 
-                var segments = field.FieldPath.Split('/');
-                if (segments.Length == 0) continue;
+            foreach (var fieldPath in fieldPaths)
+            {
+                if (cancelled != null && cancelled()) break;
+                if (string.IsNullOrEmpty(fieldPath) || resolved.ContainsKey(fieldPath)) continue;
+
+                var segments = fieldPath.Split('/');
+                if (segments.Length < 2) continue;
 
                 // First segment is the entity, last segment is the attribute
                 var entityName = segments[0];
@@ -36,23 +74,20 @@ namespace DocumentTemplateXRay.Logic
                 var metadata = GetEntityMetadata(entityName);
                 if (metadata == null) continue;
 
-                if (segments.Length == 2)
+                // Relationship path: walk to the target entity for the last attribute
+                var target = segments.Length == 2
+                    ? metadata
+                    : ResolveRelationshipPath(metadata, segments);
+                if (target == null) continue;
+
+                resolved[fieldPath] = new ResolvedName
                 {
-                    // Simple: entity/attribute
-                    field.TableDisplayName = GetEntityDisplayName(metadata);
-                    field.ColumnDisplayName = GetAttributeDisplayName(metadata, attributeName);
-                }
-                else
-                {
-                    // Relationship path: walk to the target entity for the last attribute
-                    var targetMetadata = ResolveRelationshipPath(metadata, segments);
-                    if (targetMetadata != null)
-                    {
-                        field.TableDisplayName = GetEntityDisplayName(targetMetadata);
-                        field.ColumnDisplayName = GetAttributeDisplayName(targetMetadata, attributeName);
-                    }
-                }
+                    Table = GetEntityDisplayName(target),
+                    Column = GetAttributeDisplayName(target, attributeName)
+                };
             }
+
+            return resolved;
         }
 
         private EntityMetadata ResolveRelationshipPath(EntityMetadata rootMetadata, string[] segments)
@@ -125,10 +160,30 @@ namespace DocumentTemplateXRay.Logic
             return attr?.DisplayName?.UserLocalizedLabel?.Label;
         }
 
+        /// <summary>
+        /// Whether this is the link failing rather than the environment answering. A fault is an
+        /// answer - that table is not there - and a timeout or a dropped channel is not.
+        /// </summary>
+        private static bool Unreachable(Exception error)
+        {
+            for (var ex = error; ex != null; ex = ex.InnerException)
+            {
+                if (ex is TimeoutException) return true;
+                if (ex.GetType().Name.EndsWith("CommunicationException", StringComparison.Ordinal)) return true;
+            }
+
+            return false;
+        }
+
         private EntityMetadata GetEntityMetadata(string entityLogicalName)
         {
             if (_cache.TryGetValue(entityLogicalName, out var cached))
                 return cached;
+
+            // Already tried this pass and the link was down. Not remembered past the pass - the
+            // next attempt should ask again - but asking once per field of a template would be a
+            // dozen timeouts for one answer nobody is going to get.
+            if (Unavailable.Contains(entityLogicalName)) return null;
 
             try
             {
@@ -141,8 +196,17 @@ namespace DocumentTemplateXRay.Logic
                 _cache[entityLogicalName] = response.EntityMetadata;
                 return response.EntityMetadata;
             }
-            catch
+            catch (Exception ex)
             {
+                // A table the environment has no record of is an answer, and worth remembering.
+                // A link that gave up is not an answer at all: remember nothing, so the next
+                // attempt asks again, and say so, because the two look identical on screen.
+                if (Unreachable(ex))
+                {
+                    if (!Unavailable.Contains(entityLogicalName)) Unavailable.Add(entityLogicalName);
+                    return null;
+                }
+
                 _cache[entityLogicalName] = null;
                 return null;
             }
