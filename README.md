@@ -59,13 +59,15 @@ The plugin opens the `.docx` as a ZIP archive, reads `word/document.xml` and any
 
 When connected to Dynamics 365, it also fetches entity metadata to resolve logical names (e.g., `account/name`) to display names (e.g., Account / Account Name).
 
-A template built against an environment it no longer matches still reads: every binding is listed, and only the display names it cannot resolve are left blank.
+A template built against an environment it no longer matches still reads: every binding is listed, and only the display names it cannot resolve are left blank. A blank cell means the environment says there is no such column — if the metadata could not be read at all, the tool says so rather than leaving you to guess which of the two it was.
 
 ![A stale template](https://raw.githubusercontent.com/comentality/xrm-document-template-xray/main/docs/screenshots/tool-04-unresolvable.png)
 
 ## Testing
 
 `fixtures/` holds a Word template per behaviour worth checking — duplicate column names, repeating sections, header and footer fields, stale bindings, and a document with no bindings at all — together with the script that generates them. See [fixtures/README.md](https://github.com/comentality/xrm-document-template-xray/blob/main/fixtures/README.md) for what each one proves. Every screenshot above is one of them, loaded against a live environment.
+
+`tests/slow.ps1` asks a different question: what the window does while somebody waits. It hosts the real control against a fake Dataverse that takes seconds to answer, with per-call latency and scripted failures, and drives ordinary gestures through it — nine scenarios covering what a slow link does to the tool, each with a screenshot per gesture. The templates it serves are the fixtures above, as real bytes, so the tool unzips and scans them with the extractor it ships.
 
 `xtb.ps1` builds the tool and launches a private XrmToolBox containing nothing but it, connected to the current `pac auth` environment, so you can try a change against a real environment without disturbing the XrmToolBox you use for work.
 

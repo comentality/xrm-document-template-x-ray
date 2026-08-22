@@ -12,3 +12,5 @@ artifacts/
 .xtb/
 # Word owner files, left behind when a fixture is open in Word.
 ~$*
+# Windows, shots and report from tests\slow.ps1, rewritten on every run.
+tests/.slow/
