@@ -46,6 +46,26 @@ namespace DocumentTemplateXRay.SlowHarness
         {
             if (!ok) Failures.Add(Clock.ElapsedMilliseconds + "ms  " + what);
         }
+
+        /// <summary>
+        /// Hands the tool a different environment, the way XrmToolBox does when the connection in
+        /// the toolbar changes. The empty action name is what a plain change carries.
+        /// </summary>
+        public void SwitchTo(SlowService service)
+        {
+            SwitchTo(service, "");
+        }
+
+        /// <summary>
+        /// The same, for a connection made because somebody pressed a button while there was
+        /// none. XrmToolBox carries the name of the method that asked, and the base class runs it
+        /// once the connection is in hand.
+        /// </summary>
+        public void SwitchTo(SlowService service, string actionName)
+        {
+            Control.UpdateConnection(service, new McTools.Xrm.Connection.ConnectionDetail(), actionName, null);
+            Service = service;
+        }
     }
 
     /// <summary>

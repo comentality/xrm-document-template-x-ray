@@ -49,6 +49,9 @@ namespace DocumentTemplateXRay.SlowHarness
                 MetadataFails(),
                 Cancel(),
                 BigTemplate(),
+                ConnectingFetchesItself(),
+                SwitchMidFetch(),
+                QueuedFetchSurvivesConnecting(),
             };
         }
 
@@ -346,6 +349,118 @@ namespace DocumentTemplateXRay.SlowHarness
                     r.Check(r.Probe.FieldPaths().Count == 4,
                         "and the fields should be there, and there were "
                         + r.Probe.FieldPaths().Count);
+                });
+        }
+
+        /// <summary>
+        /// A connection arriving. The tool has always fetched on one, and it should go on doing
+        /// so - once, and knowing it is doing it, so the button is dead while it is out.
+        /// </summary>
+        private static Scenario ConnectingFetchesItself()
+        {
+            return new Scenario
+            {
+                Name = "connecting-fetches-itself",
+                Why = "a connection should fill the list by itself, once",
+                Wire = s => s.Latency = Slow("templates", 800)
+            }
+                .At(200, "the connection arrives", r =>
+                {
+                    r.SwitchTo(r.Service);
+
+                    r.Check(!r.Probe.Fetch.Enabled,
+                        "the arrival should have started the fetch, and Fetch is live as though nothing is out");
+                })
+                .At(2000, "the list filled itself", r =>
+                {
+                    r.Check(r.Probe.TemplateNames().Contains(Summary),
+                        "the templates should be there for the taking, and the list holds: "
+                        + string.Join(", ", r.Probe.TemplateNames()));
+                    r.Check(r.Service.Log("templates").Count == 1,
+                        "asked once, and the org was asked " + r.Service.Log("templates").Count + " times");
+                    r.Check(r.Probe.Fetch.Enabled, "with Fetch live again");
+                });
+        }
+
+        /// <summary>
+        /// The connection changes while the list is on the wire. Every template comes back with
+        /// its whole file attached, so the answer to the old org's question is both slow and
+        /// large - and it belongs to an environment nobody is looking at any more. What must not
+        /// happen is that it lands, and one org's templates are offered as another's.
+        /// </summary>
+        private static Scenario SwitchMidFetch()
+        {
+            return new Scenario
+            {
+                Name = "switch-mid-fetch",
+                Why = "the old org's templates must not be shown as the new org's",
+                Wire = s => s.Latency = Slow("templates", 2500)
+            }
+                .At(200, "press Fetch", r => r.Probe.PressFetch())
+                .At(3000, "the first org's templates are in", r =>
+                    r.Check(r.Probe.TemplateNames().Contains(Summary),
+                        "the list should hold the first org's templates, and holds: "
+                        + string.Join(", ", r.Probe.TemplateNames())))
+                .At(3200, "ask again, then switch while it is out", r => r.Probe.PressFetch())
+                .At(3600, "switch to another org", r =>
+                {
+                    // An environment with one template in it, so which org the list is showing
+                    // is answerable by counting rather than by trust.
+                    var fabrikam = SlowService.Sampled();
+                    fabrikam.Templates.RemoveAll(t => t.Name != Letterhead);
+                    fabrikam.Latency = Slow("templates", 800);
+
+                    var old = r.Service;
+                    r.SwitchTo(fabrikam);
+
+                    r.Check(!r.Probe.TemplateNames().Contains(Summary),
+                        "the old org's templates should have gone the moment its connection did, "
+                        + "and the list holds: " + string.Join(", ", r.Probe.TemplateNames()));
+                    r.Check(old.Log("templates").Count == 2,
+                        "and the old org should not be asked again, having been asked "
+                        + old.Log("templates").Count + " times");
+                })
+                .At(5200, "what is on screen is the new org's", r =>
+                {
+                    r.Check(r.Probe.TemplateNames().Count == 1,
+                        "the new org has one template, and the list holds "
+                        + r.Probe.TemplateNames().Count + ": "
+                        + string.Join(", ", r.Probe.TemplateNames()));
+                    r.Check(r.Probe.TemplateNames().Contains(Letterhead),
+                        "and it should be that one, not whatever landed last");
+                    r.Check(r.Probe.Fetch.Enabled, "with Fetch live again");
+                });
+        }
+
+        /// <summary>
+        /// Fetch pressed with no connection. XrmToolBox asks for one and hands it back carrying
+        /// the name of the method that wanted it, which the base class runs as its last act - so
+        /// the window's own reset for a new org has to happen before all that, or it throws away
+        /// the fetch the connection was made for and leaves an empty list and a live button.
+        /// </summary>
+        private static Scenario QueuedFetchSurvivesConnecting()
+        {
+            return new Scenario
+            {
+                Name = "queued-fetch-survives-connecting",
+                Why = "the fetch a connection was made for must not be discarded by arriving",
+                Wire = s => s.Latency = Slow("templates", 800)
+            }
+                .At(200, "the connection arrives carrying the fetch that asked for it", r =>
+                {
+                    r.SwitchTo(r.Service, "FetchTemplatesFromDynamics");
+
+                    r.Check(!r.Probe.Fetch.Enabled,
+                        "the fetch the connection was made for should still be out, and Fetch is live");
+                })
+                .At(2000, "and it is the answer the window shows", r =>
+                {
+                    r.Check(r.Probe.TemplateNames().Contains(Summary),
+                        "its answer should be on screen, and the list holds: "
+                        + string.Join(", ", r.Probe.TemplateNames()));
+                    r.Check(r.Service.Log("templates").Count == 1,
+                        "once, not once for the button and once for the arrival: the org was asked "
+                        + r.Service.Log("templates").Count + " times");
                 });
         }
     }

@@ -294,15 +294,69 @@ namespace DocumentTemplateXRay
             ResumeLayout(false);
         }
 
+        /// <summary>
+        /// A different environment, handed over by XrmToolBox.
+        ///
+        /// Everything the window is holding for the org being left goes first, before the base
+        /// class is called. A connection made because somebody pressed a button arrives carrying
+        /// that button's method name, and running it is the last thing the base class does - so a
+        /// reset afterwards would throw away the very fetch the connection was made for, and
+        /// leave an empty list and a live button behind.
+        /// </summary>
         public override void UpdateConnection(IOrganizationService newService, ConnectionDetail detail, string actionName, object parameter)
         {
+            var busy = _fetching || _reading || _resolving;
+
+            // Whatever is still on the wire was asked of the org being left, and its answer is
+            // not this org's to show.
+            _fetchGeneration++;
+            _readGeneration++;
+            _fetching = false;
+            _reading = false;
+            _resolving = false;
+            _fetchTrouble = null;
+
+            // Nor are its templates. A file somebody dragged in is theirs, not the org's, and
+            // stays where it is - so only what came from Dynamics goes.
+            var open = SelectedTemplate();
+            _templates.RemoveAll(t => !t.IsLocal);
+            RefreshTemplateList();
+
+            // The pane is showing one template's fields. If that template came from the org
+            // being left, it is not a thing this window can still claim to be looking at.
+            if (open != null && !open.IsLocal)
+            {
+                ClearResults();
+                ShowDropZone();
+            }
+
+            // The fetch pulls every template's whole file, and the display names behind it are
+            // more round trips again. What is left of that is worth stopping rather than letting
+            // it finish for an org nobody is looking at any more. Before the base class, or it
+            // is the new org's fetch that gets cancelled.
+            if (busy) CancelWorker();
+
             base.UpdateConnection(newService, detail, actionName, parameter);
-            FetchTemplatesFromDynamics();
+
+            // Nobody opens this tool to look at an empty list. Not when the base class has just
+            // run the fetch this connection was asked for, though - that would be two of them,
+            // and each one carries every template's file.
+            if (newService != null && string.IsNullOrEmpty(actionName))
+            {
+                FetchTemplatesFromDynamics();
+            }
+            else
+            {
+                UpdateState();
+            }
         }
 
         private void BtnFetch_Click(object sender, EventArgs e)
         {
-            FetchTemplatesFromDynamics();
+            // Through XrmToolBox rather than straight at the org: pressed with no connection,
+            // this asks for one and is run again once there is one, instead of telling somebody
+            // to go and connect and then forgetting they ever asked.
+            ExecuteMethod(FetchTemplatesFromDynamics);
         }
 
         private void FetchTemplatesFromDynamics()
